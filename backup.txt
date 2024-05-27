@@ -1,0 +1,394 @@
+ChatGPT 4o
+index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Management</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1 class="main-title">Library Management</h1>
+        <div class="book-counter">Number of Books: <span id="bookCount">0</span></div>
+    </header>
+    <div class="container">
+        <form id="bookForm">
+            <div class="form-group">
+                <label for="title">Title:</label>
+                <input type="text" id="title" name="title">
+            </div>
+            <div class="form-group">
+                <label for="author">Author:</label>
+                <input type="text" id="author" name="author">
+            </div>
+            <div class="form-group">
+                <label for="year">Year of Publication:</label>
+                <input type="text" id="year" name="year">
+            </div>
+            <div class="form-group">
+                <label for="editor">Editor:</label>
+                <input type="text" id="editor" name="editor">
+            </div>
+            <div class="form-group">
+                <label for="genre">Genre:</label>
+                <input type="text" id="genre" name="genre">
+            </div>
+            <div class="form-group">
+                <label for="pages">Number of Pages:</label>
+                <input type="text" id="pages" name="pages">
+            </div>
+            <div class="form-group">
+                <label for="language">Language:</label>
+                <input type="text" id="language" name="language">
+            </div>
+            <button type="submit">Add Book</button>
+        </form>
+
+        <table id="bookTable">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Year</th>
+                    <th>Editor</th>
+                    <th>Genre</th>
+                    <th>Pages</th>
+                    <th>Language</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search books by title...">
+        <button id="searchButton">Search</button>
+        <button id="sortButton">Sort by Title</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
+script.js : 
+const books = []; // Array to store book dictionaries
+const bookTable = document.getElementById('bookTable').getElementsByTagName('tbody')[0];
+const bookCountElement = document.getElementById('bookCount');
+
+document.getElementById('bookForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent the form from submitting the traditional way
+
+    // Get form data
+    const title = document.getElementById('title').value;
+    const author = document.getElementById('author').value;
+    const year = document.getElementById('year').value;
+    const editor = document.getElementById('editor').value;
+    const genre = document.getElementById('genre').value;
+    const pages = document.getElementById('pages').value;
+    const language = document.getElementById('language').value;
+
+    // Create dictionary (object) with form data
+    const bookData = {
+        title: title,
+        author: author,
+        year: year,
+        editor: editor,
+        genre: genre,
+        pages: pages,
+        language: language
+    };
+
+    // Add the book data to the books array
+    books.push(bookData);
+
+    // Add the book data to the table
+    addBookToTable(bookData);
+
+    // Update the book counter
+    updateBookCount();
+
+    // Clear the form fields
+    document.getElementById('bookForm').reset();
+});
+
+function addBookToTable(book) {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>${book.title}</td>
+        <td>${book.author}</td>
+        <td>${book.year}</td>
+        <td>${book.editor}</td>
+        <td>${book.genre}</td>
+        <td>${book.pages}</td>
+        <td>${book.language}</td>
+        <td><button onclick="deleteBook(${books.length - 1})">Delete</button></td>
+    `;
+    bookTable.appendChild(row);
+}
+
+function deleteBook(index) {
+    books.splice(index, 1);
+    renderBooks();
+    updateBookCount(); // Update the book counter after deletion
+}
+
+function renderBooks() {
+    bookTable.innerHTML = '';
+    books.forEach((book, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${book.title}</td>
+            <td>${book.author}</td>
+            <td>${book.year}</td>
+            <td>${book.editor}</td>
+            <td>${book.genre}</td>
+            <td>${book.pages}</td>
+            <td>${book.language}</td>
+            <td><button onclick="deleteBook(${index})">Delete</button></td>
+        `;
+        bookTable.appendChild(row);
+    });
+}
+
+// Function to update the book counter
+function updateBookCount() {
+    bookCountElement.textContent = books.length;
+}
+
+// Function to search for books by title using linear search
+function searchBookByTitle(title) {
+    const results = [];
+    for (let i = 0; i < books.length; i++) {
+        if (books[i].title.toLowerCase().includes(title.toLowerCase())) {
+            results.push(books[i]);
+        }
+    }
+    return results;
+}
+
+// Handle search button click
+document.getElementById('searchButton').addEventListener('click', function() {
+    const searchTerm = document.getElementById('searchInput').value;
+    const results = searchBookByTitle(searchTerm);
+    bookTable.innerHTML = ''; // Clear the table
+    results.forEach(book => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${book.title}</td>
+            <td>${book.author}</td>
+            <td>${book.year}</td>
+            <td>${book.editor}</td>
+            <td>${book.genre}</td>
+            <td>${book.pages}</td>
+            <td>${book.language}</td>
+            <td><button onclick="deleteBook(${books.indexOf(book)})">Delete</button></td>
+        `;
+        bookTable.appendChild(row);
+    });
+});
+
+// Function to sort books by title using selection sort
+function selectionSortBooksByTitle() {
+    for (let i = 0; i < books.length - 1; i++) {
+        let minIndex = i;
+        for (let j = i + 1; j < books.length; j++) {
+            if (books[j].title.toLowerCase() < books[minIndex].title.toLowerCase()) {
+                minIndex = j;
+            }
+        }
+        if (minIndex !== i) {
+            [books[i], books[minIndex]] = [books[minIndex], books[i]]; // Swap the books
+        }
+    }
+}
+
+// Handle sort button click
+document.getElementById('sortButton').addEventListener('click', function() {
+    selectionSortBooksByTitle();
+    renderBooks(); // Re-render the table with sorted books
+});
+
+styles.css
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 20px;
+    color: #333;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 20px;
+    background-color: #4CAF50;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.main-title {
+    font-size: 40px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+}
+
+.book-counter {
+    font-size: 18px;
+    margin-top: 10px;
+    color: #e0f7fa;
+}
+
+.container {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+form {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 300px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #333;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 16px;
+    background-color: #f9f9f9;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus {
+    border-color: #4CAF50;
+    outline: none;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #4CAF50;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #388E3C;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+th, td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #4CAF50;
+    color: #fff;
+    font-weight: bold;
+}
+
+td {
+    background-color: #fff;
+    color: #333;
+}
+
+td button {
+    background-color: #e74c3c;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    padding: 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+td button:hover {
+    background-color: #c0392b;
+}
+
+.search-bar {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+}
+
+.search-bar input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 16px;
+    background-color: #f9f9f9;
+    transition: border-color 0.3s;
+}
+
+.search-bar input[type="text"]:focus {
+    border-color: #4CAF50;
+    outline: none;
+}
+
+.search-bar button {
+    width: 100%;
+    padding: 12px;
+    background-color: #2196F3;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.search-bar button:hover {
+    background-color: #1976D2;
+}
+
+.search-bar #sortButton {
+    background-color: #FF9800;
+}
+
+.search-bar #sortButton:hover {
+    background-color: #F57C00;
+}
+
+i want to add a brrower table and also the loan list tahat contains loan books also i want to change all design please this the n time that you give me just shiity things

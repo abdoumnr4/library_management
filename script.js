@@ -1,11 +1,16 @@
-const books = []; // Array to store book dictionaries
+const books = [];
+const borrowers = [];
+const loans = [];
+
 const bookTable = document.getElementById('bookTable').getElementsByTagName('tbody')[0];
+const borrowerTable = document.getElementById('borrowerTable').getElementsByTagName('tbody')[0];
+const loanTable = document.getElementById('loanTable').getElementsByTagName('tbody')[0];
 const bookCountElement = document.getElementById('bookCount');
+const borrowerCountElement = document.getElementById('borrowerCount');
 
+// Add Book Event
 document.getElementById('bookForm').addEventListener('submit', function(event) {
-    event.preventDefault(); // Prevent the form from submitting the traditional way
-
-    // Get form data
+    event.preventDefault();
     const title = document.getElementById('title').value;
     const author = document.getElementById('author').value;
     const year = document.getElementById('year').value;
@@ -14,28 +19,40 @@ document.getElementById('bookForm').addEventListener('submit', function(event) {
     const pages = document.getElementById('pages').value;
     const language = document.getElementById('language').value;
 
-    // Create dictionary (object) with form data
-    const bookData = {
-        title: title,
-        author: author,
-        year: year,
-        editor: editor,
-        genre: genre,
-        pages: pages,
-        language: language
-    };
-
-    // Add the book data to the books array
+    const bookData = { title, author, year, editor, genre, pages, language };
     books.push(bookData);
-
-    // Add the book data to the table
     addBookToTable(bookData);
-
-    // Update the book counter
     updateBookCount();
-
-    // Clear the form fields
+    updateLoanBookOptions();
     document.getElementById('bookForm').reset();
+});
+
+// Add Borrower Event
+document.getElementById('borrowerForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const borrowerName = document.getElementById('borrowerName').value;
+    const borrowerContact = document.getElementById('borrowerContact').value;
+
+    const borrowerData = { name: borrowerName, contact: borrowerContact };
+    borrowers.push(borrowerData);
+    addBorrowerToTable(borrowerData);
+    updateBorrowerCount();
+    updateLoanBorrowerOptions();
+    document.getElementById('borrowerForm').reset();
+});
+
+// Add Loan Event
+document.getElementById('loanForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const borrowerName = document.getElementById('loanBorrower').value;
+    const bookTitle = document.getElementById('loanBook').value;
+    const loanDate = document.getElementById('loanDate').value;
+    const returnDate = document.getElementById('returnDate').value;
+
+    const loanData = { borrowerName, bookTitle, loanDate, returnDate };
+    loans.push(loanData);
+    addLoanToTable(loanData);
+    document.getElementById('loanForm').reset();
 });
 
 function addBookToTable(book) {
@@ -53,10 +70,45 @@ function addBookToTable(book) {
     bookTable.appendChild(row);
 }
 
+function addBorrowerToTable(borrower) {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>${borrower.name}</td>
+        <td>${borrower.contact}</td>
+        <td><button onclick="deleteBorrower(${borrowers.length - 1})">Delete</button></td>
+    `;
+    borrowerTable.appendChild(row);
+}
+
+function addLoanToTable(loan) {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>${loan.borrowerName}</td>
+        <td>${loan.bookTitle}</td>
+        <td>${loan.loanDate}</td>
+        <td>${loan.returnDate}</td>
+        <td><button onclick="deleteLoan(${loans.length - 1})">Delete</button></td>
+    `;
+    loanTable.appendChild(row);
+}
+
 function deleteBook(index) {
     books.splice(index, 1);
     renderBooks();
-    updateBookCount(); // Update the book counter after deletion
+    updateBookCount();
+    updateLoanBookOptions();
+}
+
+function deleteBorrower(index) {
+    borrowers.splice(index, 1);
+    renderBorrowers();
+    updateBorrowerCount();
+    updateLoanBorrowerOptions();
+}
+
+function deleteLoan(index) {
+    loans.splice(index, 1);
+    renderLoans();
 }
 
 function renderBooks() {
@@ -77,9 +129,62 @@ function renderBooks() {
     });
 }
 
-// Function to update the book counter
+function renderBorrowers() {
+    borrowerTable.innerHTML = '';
+    borrowers.forEach((borrower, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${borrower.name}</td>
+            <td>${borrower.contact}</td>
+            <td><button onclick="deleteBorrower(${index})">Delete</button></td>
+        `;
+        borrowerTable.appendChild(row);
+    });
+}
+
+function renderLoans() {
+    loanTable.innerHTML = '';
+    loans.forEach((loan, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${loan.borrowerName}</td>
+            <td>${loan.bookTitle}</td>
+            <td>${loan.loanDate}</td>
+            <td>${loan.returnDate}</td>
+            <td><button onclick="deleteLoan(${index})">Delete</button></td>
+        `;
+        loanTable.appendChild(row);
+    });
+}
+
 function updateBookCount() {
     bookCountElement.textContent = books.length;
+}
+
+function updateBorrowerCount() {
+    borrowerCountElement.textContent = borrowers.length;
+}
+
+function updateLoanBookOptions() {
+    const loanBookSelect = document.getElementById('loanBook');
+    loanBookSelect.innerHTML = '';
+    books.forEach(book => {
+        const option = document.createElement('option');
+        option.value = book.title;
+        option.textContent = book.title;
+        loanBookSelect.appendChild(option);
+    });
+}
+
+function updateLoanBorrowerOptions() {
+    const loanBorrowerSelect = document.getElementById('loanBorrower');
+    loanBorrowerSelect.innerHTML = '';
+    borrowers.forEach(borrower => {
+        const option = document.createElement('option');
+        option.value = borrower.name;
+        option.textContent = borrower.name;
+        loanBorrowerSelect.appendChild(option);
+    });
 }
 
 // Function to search for books by title using linear search
